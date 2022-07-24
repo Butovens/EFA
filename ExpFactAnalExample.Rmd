@@ -1,0 +1,154 @@
+---
+title: "Butovens Médé"
+output: html_notebook
+---
+
+###Initial set up:
+```{r}
+# install.packages(c("psych", "GPArotation")) # Installing "psych" & "GPArotation"
+library(psych) # loading "psych"
+library(GPArotation) # loading "GPArotation"
+# install.packages("paran") # Installing "paran" to create detailed scree plots
+library(paran) # loading "paran"
+file.choose() # Choose R file in appropriate directory
+```
+
+###Data reading
+```{r}
+rathus <- read.delim("DATArathus.txt",header = FALSE) # Importing data
+head(rathus) # looking at data
+tail(rathus) # looking at data
+rathus[!complete.cases(rathus),] # checking which rows have missing data/ values
+newrathus <- na.omit(rathus) # creating new dataset by removing the few rows with missing values from original dataset
+newrathus[!complete.cases(newrathus),] # checking if rows with missing values were removed 
+```
+
+###Determining appropriate number of factors
+```{r}
+parallel <- paran(newrathus, cfa= TRUE, graph= TRUE, color= TRUE, col= c("black", "red", "blue")) # Generating scree plots to determine the appropriate number of factors to be extrated from this dataset
+```
+- From the scree plots we can see that there are 4 adjusted eigen values (or factors) from the sample data that are above the sample parallel data (i.e. ramdom eigen values generated from the parallel analysis). The fifth eigen value falls for the sample data falls below the generated mean of the eigen values for the parallel data, thus it may not be worth retaining factors after this point. It appears that 4 factors should be the adequate number of factor to be extracted but let's run an EFA for 3, 4 and 5 factors nonetheless.
+
+
+###(b) 
+#####Data Analysis : 3 factors extracted
+```{r}
+newrathus.efa3 <- fa(newrathus, nfactors = 3, rotate = "oblimin", cor = "poly", scores = "tenBerge", SMC = TRUE,symmetric = TRUE, warnings = TRUE, fm = "wls", alpha = .10, p = .05, oblique.scores = TRUE) # EFA analysis for the extraction of 3 factor with oblique rotation
+newrathus.efa3 # Prints results of analysis
+print(newrathus.efa3$loadings, cutoff = .3) # Only prints loadings with cutoff of > .3
+fa.diagram(newrathus.efa3, errors = TRUE) # Draws diagram of factor loading but only showing the biggest loadings per item 
+newrathus.efa3$loadings[1,2]
+```
+
+#####Data Analysis : 4 factors extracted
+```{r}
+newrathus.efa4 <- fa(newrathus, nfactors = 4, rotate = "oblimin", cor = "poly", scores = "tenBerge", SMC = TRUE,symmetric = TRUE, warnings = TRUE, fm = "wls", alpha = .10, p = .05, oblique.scores = TRUE) # EFA analysis for the extraction of 4 factor with oblique rotation
+newrathus.efa4 # Prints results of analysis
+print(newrathus.efa4$loadings, cutoff = .3) # Only prints loadings with cutoff of > .3
+fa.diagram(newrathus.efa4, errors = TRUE) # Draws diagram of factor loading but only showing the biggest loadings per item 
+```
+
+#####Data Analysis : 5 factors extracted
+```{r}
+newrathus.efa5 <- fa(newrathus, nfactors = 5, rotate = "oblimin", cor = "poly", scores = "tenBerge", SMC = TRUE,symmetric = TRUE, warnings = TRUE, fm = "wls", alpha = .10, p = .05, oblique.scores = TRUE) # EFA analysis for the extraction of 5 factor with oblique rotation
+newrathus.efa5 # Prints results of analysis
+print(newrathus.efa5$loadings, cutoff = .3) # Only prints loadings with cutoff of > .3
+fa.diagram(newrathus.efa5, errors = TRUE) # Draws diagram of factor loading but only showing the biggest loadings per item 
+```
+
+I believe that the extraction of 4 factors most efficiently and accurately describes the data patterns for these following reasons:
+
+1- The scree plots (which show the eigenvalues for each factor or how much of the variance of the observed variables a factor explains) showed that 4 factors should be the a smaller number of interpretable factors that explain the maximum amount variability in the data.
+
+2- All of the loadings (which represent the relationship of each variable to an underlying factor) in the 4-factor model are linked to a single factor (at the exception of item 10 which loads on foctors 1 & 2). Even though not all of the variables load highly on a unique factor, this model is the closest to exhibit a simple structure pattern. In addition, we can see that in the 5-factor model there is a factor that only has one variable loading on it. Factors should have more than a couple variables loading on them to be considered viable.  
+
+3- Looking at the model fit indices we can see that the root mean square of residuals (RMSR) is 0.04. This is acceptable as this value should be closer to 0. Then the RMSEA (root mean square error of approximation) index is 0.06, which is the lowest among the 3 different models. It’s not below 0.05, but it is the closet. The Tucker-Lewis Index (TLI) is 0.779 – an acceptable value, and the highest among the 3 models. Finally, the BIC is -1056 which is the lowest among the the 3 models. 
+
+###(c)
+After examining the variables that load heavily on the factors
+and trying to decide what construct is common to these variables, I named the factors as followed:
+
+- Insecurity for factor 1/WLS 1 (which is linked to items: 2,10,11,12,13,14,16). The reason for that choice is because for each of the items mentioned, and especially those that have a high loading on this factor (e.g. item 13: I would rather apply for a job or for admission to a college by writing letters than by going through with personal interviews.), insecurity seems to be the common construct. In other words, scoring high on these questionnaire items might be reflective of a high level of insecurity. 
+
+- Fear of conflict or disappointment for factor 4/WLS 4 (which is linked to items: 5,9,15,17,23,24). In a similar fashion to the previous factor, items that load highling on this factor (e.g. item 23: I often have a hard time saying No.) seem to be reflective of acquiescence possibly due to fear of conflic or fear of disappointment.
+
+- Candidness for factor 2/WLS 2 (which is linked to items: 1,8,10,20,21,22,29). Most of the items which load on this factor (e.g. item 29: I am quick to express an opinion) can be mapped onto the construct of candidness or straighforwardness. Other items don't map as well onto that construct (e.g. item 8: I strive to get ahead as well as most people in my position) but their loading on this factor, although substantial, is not as high as compared to other items.
+
+- Self-assurance for factor 3/WLS 3 (which is linked to items: 3,18,19,25,27,28). Items that load highly on this factor (e.g. item 3: When the food served at a restaurant is not done to my satisfaction, I complain about it to the waiter or waitress.) can be reflective of confidence or self-assurance.
+
+###(d)
+<center><h3>Table.1: Item loadings for 4-factor model of rathus dataset</h3></center> 
+
+|Item|Insecurity|Fear of Conflict/Disappointment|Candidness|Self-Assurance|
+|:-------------|:-------------:|:-----:|:-----:|:-----:|
+|Item 13   | 0.692 |  |  |  |
+|Item 12   | 0.659 |  |  |  |
+|Item 2   | 0.534 |  |  |  |
+|Item 16   | 0.500 |  |  |  |
+|Item 11   | 0.446 |  |  |  |
+|Item 14   | 0.414 |  |  |  |
+|Item 23   |  | 0.815 |  |  |
+|Item 9   |  | 0.596 |  |  |
+|Item 5   |  | 0.586 |  |  |
+|Item 24   |  | 0.366 |  |  |
+|Item 15   |  | 0.307 |  |  |
+|Item 17   |  | 0.304 |  |  |
+|Item 29   |  |  | 0.577 |  |
+|Item 21   |  |  | 0.566 |  |
+|Item 20   |  |  | 0.444 |  |
+|Item 22   |  |  | 0.436 |  |
+|Item 1   |  |  | 0.384 |  |
+|Item 10   |  |  | 0.371 |  |
+|Item 8   |  |  | 0.354 |  |
+|Item 3   |  |  |  | 0.659 |
+|Item 25   |  |  |  | 0.643 |
+|Item 28   |  |  |  | 0.527 |
+|Item 27   |  |  |  | 0.489 |
+|Item 19   |  |  |  | 0.361 |
+|Item 18   |  |  |  | 0.339 |
+
+*Note: Table listing the item loadings in descending order for each of the factor. Items 6,7,26 & 30 were not included in this table as they did not load to any of the factors. Item 10 was crossloading on the factors 'candidness' and 'Insecurity' but was only reported under the factor 'candidness' because this is where its loading was the heighest (i.e. 0.371 as opposed to 0.327 for 'Insecurity').*
+
+#####Computation of Cronbach's alpha
+```{r}
+Insecurity <- newrathus[,c(13,12,2,16,11,14)] #Creating factor with selected items
+FearofDC <- newrathus[,c(23,9,5,29,15,17)] #Creating factor with selected items
+Candidness <- newrathus[,c(29,21,20,22,1,10,8)] #Creating factor with selected items
+SA <- newrathus[,c(3,25,28,27,19,18)] #Creating factor with selected items
+
+alpha.insc <- alpha(Insecurity) #Computing Cronbach's alpha for Insecurity
+print(alpha.insc, digits = 3) #Printing Cronbach's alpha for Insecurity
+
+alpha.FDC <- alpha(FearofDC) #Computing Cronbach's alpha for Fear of Conflict/Disappointment
+print(alpha.FDC, digits = 3) #Printing #Computing Cronbach's alpha for Fear of Conflict/Disappointmenty
+
+alpha.cand <- alpha(Candidness) #Computing Cronbach's alpha for Candidness
+print(alpha.cand, digits = 3) #Printing Cronbach's alpha for Candidness
+
+alpha.sa <- alpha(SA) #Computing Cronbach's alpha for Self-Assurance
+print(alpha.sa, digits = 3) #Printing Cronbach's alpha for Self-Assurance
+```
+
+
+###(e) Results
+#####*Data Screening*
+The data was screened for missing responses in some of the items for participants. Five participants had missing values for some of their items. These participants were removed from the analysis. The final sample size was 608 which provided a ratio of over 20 cases per variable/items.
+
+#####*Factor Analysis*
+Factor analysis was used because the primary purpose was to investigate the factors underlying the assertiness concept in the rathus scale. The factor analysis was done with Oblimin (non-orthogonal) rotation. Initial eigen values indicated that the first four factors explained 39%, 12%, 6% & 4% of the variance respectively. (These values were obtained by dividing the eigen values of these factor by the total number of meaningful factors i.e. 4.258/11 for the first factor). The fourth, fifth and sixth factors had eigen values 0.25, and each explained less than 2% of the variance. Solutions for three, four, and five factors were each examined using factor analysis with oblimin rotations of the factor loading matrix. The four factor solution was preferred because of: (a) the ‘leveling off’ of eigen values on the scree plot after four factors; (b) the simple structure provided by solution; (c) the insufficient number of primary loadings and difficulty of interpreting the fifth factor and subsequent factors; and (d) the better model fit indices (i.e. RMSR: 0.04, RMSEA: 0.06, Tucker-Lewis Index: 0.779 and BIC: -1056) compared to the other models.
+
+A total of four items were eliminated because they did not contribute to a simple
+factor structure and failed to meet a minimum criteria of having a primary factor loading of .3 or above. The items 6: “When I am asked to do something, I insist upon knowing why.”, 7:"There are times when I look for a good, vigorous argument.", 26: "When I am given a complaint, I sometimes just dont know what to say.", and 30: "There are times when I just cant say anything." did not load above .3 on any factor. The item 10: "I enjoy starting conversations with new acquaintances and strangers." had factor had a
+primary factor loading of .371 on Candidness and a cross-loading of .327 on Insecurity.  
+ 
+The factor labels proposed (i.e. Insecurity, Fear of Conflict/Disappointment, Candidness, Self-Assurance) seemed to suit the extracted factors and were retained. Internal consistency for each of the scales was examined using Cronbach’s alpha. The alphas were moderate: .73 for Insecurity (6 items), .64 for Fear of Conflict/Disappointment (6 items), .66 for Candidness (7 items), and .68 for Self-Assurance. No substantial increases in alpha for any of the scales could have been achieved by eliminating more items. 
+
+Overall, these analyses indicated that four distinct factors were underlying
+participants responses to the rathus items and that these factors were
+moderately internally consistent. Four of the 30 items were eliminated.
+
+###2
+
+If we cansider that CFA, which is usually theory-driven (as opposed to data-driven for EFA), tests the extent to which the proposed factor structure is replicated in another sample, we use it to assess the Unidimensionality, Validity, and Reliability of the latent constructs, then I think the chosen structure would hold up (to some extent). The model fit was moderately good (i.e. the item responses for the factors were unidimensional enough), there was sufficient convergent and discriminant validity as we obtain a simple structure, and the reliability of the items for each factor was moderate but not low.
+
+
