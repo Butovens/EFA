@@ -1,5 +1,6 @@
 ---
-title: "Butovens Médé"
+title: "Exploratory Factor Analysis"
+author: "Butovens Médé"
 output: html_notebook
 ---
 
